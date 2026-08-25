@@ -4,13 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Thousands of women think their stubborn belly is simply “part of menopause”. They are WRONG…</title>
-<!-- TODO · consent banner: swap in the TummyTox UK CookieScript / CMP tag.
-     The nupure tag was removed so this page does not write to nupure's consent project.
-<script type="text/javascript" charset="UTF-8" src="//cdn.cookie-script.com/s/TUMMYTOX_COOKIESCRIPT_ID.js"></script>
--->
-<!-- TODO · favicon: point at the TummyTox UK favicon URL.
-<link rel="icon" href="FAVICON_URL">
--->
+<!-- Consent — CookieScript (TummyTox UK). Loads first so it can gate the tags below. -->
+<script type="text/javascript" charset="UTF-8" src="//cdn.cookie-script.com/s/b8f094b36eb352ec77e06897fa9f02aa.js"></script>
+<link rel="icon" href="https://www.sensi2live.com/media/favicon/stores/81/favicon_1.png">
 <style>
   :root{
     --plum:#ffb4aa;          /* headline band — salmon pink */
@@ -274,7 +270,7 @@
 <!-- ===== SECTION 05 · BLOCK 03 · IT'S NOT PROGESTERONE  (optional) ===== -->
 <section class="block alt"><div class="wrap"><div class="grid">
   <div class="col-media">
-    <div class="ph filled" id="img-03"><img src="https://www.sensi2live.com/media/catalog/product/cache/eec48ab0b6fb28750d7cc7bb3f0d50b1/2/0/20251001_tt_product-pictures-cortisol-belly-caps_uk-4_6.png" alt="Cortisol Belly Caps – cortisol is the real driver of menopausal belly fat" width="560" height="560" loading="lazy"></div>
+    <div class="ph filled" id="img-03"><img src="https://www.sensi2live.com/media/catalog/product/cache/eec48ab0b6fb28750d7cc7bb3f0d50b1/2/0/20251001_tt_product-pictures-cortisol-belly-caps_uk-4_6.png" alt="What rising cortisol does to appetite, fat storage, sleep and mood" width="560" height="420" loading="lazy"></div>
   </div>
   <div class="col-copy">
     <div class="badge">3</div>
@@ -289,7 +285,7 @@
 <!-- ===== SECTION 06 · BLOCK 04 · BLOCK THE TRIGGERS  (optional) ===== -->
 <section class="block"><div class="wrap"><div class="grid">
   <div class="col-media">
-    <div class="ph filled" id="img-04"><img src="/images/20260818_cortisol-belly-caps_varnum_icons-infographic-uk.png" alt="What rising cortisol does to appetite, fat storage, sleep and mood" width="560" height="420" loading="lazy"></div>
+    <div class="ph filled" id="img-04"><img src="/images/20260818_cortisol-belly-caps_varnum_icons-infographic-uk.png" alt="The 2-in-1 formula: Ashwagandha KSM-66® and Morosil®" width="520" height="480" loading="lazy"></div>
   </div>
   <div class="col-copy">
     <div class="badge">4</div>
@@ -484,13 +480,11 @@
   });
 </script>
 
-<!-- ===== Site analytics — GrowthBook + Converge pixel + Clarity =====
-     TODO · these three loaders carry nupure's keys in the source template and are
-     commented out so this page does not report into nupure's projects.
-     Drop in the TummyTox UK keys and uncomment.
-
+<!-- ===== Site analytics — Converge pixel (TummyTox UK) ===== -->
+<script src="https://static.runconverge.com/pixels/UHOE1n.js" async></script>
+<!-- TODO · GrowthBook + Clarity: no TummyTox keys supplied yet. Loaders omitted rather
+     than shipped with placeholders — never inherit another brand's keys.
 <script async data-api-host="https://cdn.growthbook.io" data-client-key="TUMMYTOX_GROWTHBOOK_CLIENT_KEY" src="https://cdn.jsdelivr.net/npm/@growthbook/growthbook/dist/bundles/auto.min.js"></script>
-<script src="https://static.runconverge.com/pixels/TUMMYTOX_CONVERGE_PIXEL_ID.js" async></script>
 <script>
   (function(c,l,a,r,i,t,y){
     c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -547,25 +541,70 @@
     }, { capture: true });
   })();
 </script>
-<!-- Converge cross-domain stitching: this page sits on an external domain and every CTA
-     is a redirect to the shop domain, which the pixel does NOT auto-decorate. Read the
-     __cvg_uid / __cvg_sid cookies the pixel sets and append them fresh on click, so the
-     shop session is not mis-attributed as an organic referral. -->
+<!-- ===== LANDING-PARAM FORWARDING + CONVERGE STITCHING (infra, every PDP) =====
+     Copies every query param the visitor landed with onto every outbound shop
+     link, and appends Converge's __cvg_uid / __cvg_sid fresh from the cookies
+     the pixel sets. Platform-agnostic: Shopify cart permalink, Magento product
+     URL, anything.
+     REPLACES the older standalone cvgDecorate block — never run both, or the
+     Converge params double-append.
+     Exposes window.vhcDecorate(url) for JS-built redirects (minicart checkout). -->
 <script>
-  (function () {
-    function cvgCookie(n){ var m=document.cookie.match('(?:^|; )'+n+'=([^;]*)'); return m?decodeURIComponent(m[1]):''; }
-    function cvgDecorate(url){
-      var uid=cvgCookie('__cvg_uid'), sid=cvgCookie('__cvg_sid'), parts=[];
-      if(uid) parts.push('__cvg_uid='+encodeURIComponent(uid));
-      if(sid) parts.push('__cvg_sid='+encodeURIComponent(sid));
-      if(!parts.length) return url;
-      return url + (url.indexOf('?')>-1?'&':'?') + parts.join('&');
-    }
-    Array.prototype.forEach.call(document.querySelectorAll('a[data-atc]'), function (a) {
-      var base = a.getAttribute('href');   // pristine URL, so repeat clicks never double-append
-      a.addEventListener('click', function () { a.href = cvgDecorate(base); }, { capture: true });
+(function () {
+  var KEY = 'vhc_landing_params';              // sessionStorage, per tab, first touch wins
+  var MAX_PARAMS = 30, MAX_LEN = 512;          // abuse guard
+  var RESERVED = ['__cvg_uid', '__cvg_sid'];   // never stored; always read live from cookies
+
+  function landingParams() {
+    var out = {}, n = 0;
+    try {
+      new URLSearchParams(window.location.search).forEach(function (v, k) {
+        if (n >= MAX_PARAMS || !k || v.length > MAX_LEN) return;
+        if (RESERVED.indexOf(k) > -1) return;
+        out[k] = v; n++;
+      });
+    } catch (e) {}
+    var prev = {};
+    try { prev = JSON.parse(sessionStorage.getItem(KEY) || '{}'); } catch (e) {}
+    Object.keys(prev).forEach(function (k) { if (!(k in out)) out[k] = prev[k]; });
+    try { sessionStorage.setItem(KEY, JSON.stringify(out)); } catch (e) {}
+    return out;
+  }
+  var PARAMS = landingParams();
+
+  function cookie(n) {
+    var m = document.cookie.match('(?:^|; )' + n + '=([^;]*)');
+    return m ? decodeURIComponent(m[1]) : '';
+  }
+
+  function decorate(url) {
+    if (!url) return url;
+    var u;
+    try { u = new URL(url, window.location.href); } catch (e) { return url; }
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return url;
+    Object.keys(PARAMS).forEach(function (k) {          // destination wins
+      if (!u.searchParams.has(k)) u.searchParams.set(k, PARAMS[k]);
     });
-  })();
+    var uid = cookie('__cvg_uid'), sid = cookie('__cvg_sid');
+    if (uid) u.searchParams.set('__cvg_uid', uid);      // always fresh
+    if (sid) u.searchParams.set('__cvg_sid', sid);
+    return u.toString();
+  }
+  window.vhcDecorate = decorate;
+
+  var SEL = 'a[data-atc], a[href*="/cart/"], a[data-forward-params]';
+  function wire(a) {
+    if (a.id === 'mc-checkout-btn' || a.hasAttribute('data-vhc-skip')) return; // JS rebuilds href
+    if (a.getAttribute('data-vhc-wired')) return;
+    var base = a.getAttribute('href');
+    if (!base) return;
+    a.setAttribute('data-vhc-wired', '1');
+    a.addEventListener('click', function () { a.href = decorate(base); }, { capture: true });
+  }
+  function wireAll() { Array.prototype.forEach.call(document.querySelectorAll(SEL), wire); }
+  wireAll();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wireAll);
+})();
 </script>
 </body>
 </html>
