@@ -542,10 +542,12 @@
   })();
 </script>
 <!-- ===== LANDING-PARAM FORWARDING + CONVERGE STITCHING (infra, every PDP) =====
-     Copies every query param the visitor landed with onto every outbound shop
-     link, and appends Converge's __cvg_uid / __cvg_sid fresh from the cookies
-     the pixel sets. Platform-agnostic: Shopify cart permalink, Magento product
-     URL, anything.
+     At click time, decorates every outbound shop link with:
+       1. every query param the visitor landed with (utm_*, gclid, fbclid, …)
+       2. Converge's __cvg_uid / __cvg_sid, fresh from the cookies the pixel sets
+       3. the visitor's CookieScript consent state — csa (analytics) / csm (marketing).
+          TummyTox is Magento, so the shop runs its own CookieScript tag and would
+          otherwise ask the same question twice in one funnel.
      REPLACES the older standalone cvgDecorate block — never run both, or the
      Converge params double-append.
      Exposes window.vhcDecorate(url) for JS-built redirects (minicart checkout). -->
@@ -553,7 +555,16 @@
 (function () {
   var KEY = 'vhc_landing_params';              // sessionStorage, per tab, first touch wins
   var MAX_PARAMS = 30, MAX_LEN = 512;          // abuse guard
-  var RESERVED = ['__cvg_uid', '__cvg_sid'];   // never stored; always read live from cookies
+
+  // Consent-state params -> CookieScript CATEGORY KEYS (the key, not the banner's
+  // display label — a banner can show "Marketing" while the key stays `targeting`).
+  // Verify against CookieScript.instance.categories() on the live project.
+  // Set to {} on Shopify builds: Shopify checkout runs its own consent layer.
+  var CONSENT_MAP = { csa: 'performance', csm: 'targeting' };
+
+  // Never carried over from the inbound URL — always recomputed locally, so a
+  // crafted or stale inbound link can't spoof consent or session identity.
+  var RESERVED = ['__cvg_uid', '__cvg_sid'].concat(Object.keys(CONSENT_MAP));
 
   function landingParams() {
     var out = {}, n = 0;
@@ -577,6 +588,38 @@
     return m ? decodeURIComponent(m[1]) : '';
   }
 
+  // --- CookieScript consent state -----------------------------------------
+  // Prefer the JS API; fall back to parsing the CookieScriptConsent cookie if the
+  // banner script hasn't initialised yet. Read at CLICK time, never cached — the
+  // visitor can change their choice after the page renders.
+  function consentFromCookie() {
+    var raw = cookie('CookieScriptConsent');
+    if (!raw) return null;
+    var d; try { d = JSON.parse(raw); } catch (e) { return null; }
+    var c = d.categories;
+    if (typeof c === 'string') { try { c = JSON.parse(c); } catch (e) { c = []; } }
+    return { action: d.action, categories: Array.isArray(c) ? c : [] };
+  }
+  function consentFlags() {
+    if (!Object.keys(CONSENT_MAP).length) return null;
+    var st = null;
+    try {
+      if (window.CookieScript && window.CookieScript.instance &&
+          typeof window.CookieScript.instance.currentState === 'function') {
+        st = window.CookieScript.instance.currentState();
+      }
+    } catch (e) {}
+    if (!st) st = consentFromCookie();
+    // Banner unanswered -> send nothing. An unanswered banner is NOT a refusal;
+    // csa=0 would tell the shop the visitor declined when they were never asked.
+    if (!st || !st.action) return null;
+    var cats = st.categories || [], out = {};
+    Object.keys(CONSENT_MAP).forEach(function (param) {
+      out[param] = (st.action !== 'reject' && cats.indexOf(CONSENT_MAP[param]) > -1) ? '1' : '0';
+    });
+    return out;
+  }
+
   function decorate(url) {
     if (!url) return url;
     var u;
@@ -588,6 +631,8 @@
     var uid = cookie('__cvg_uid'), sid = cookie('__cvg_sid');
     if (uid) u.searchParams.set('__cvg_uid', uid);      // always fresh
     if (sid) u.searchParams.set('__cvg_sid', sid);
+    var cf = consentFlags();                            // always fresh
+    if (cf) Object.keys(cf).forEach(function (k) { u.searchParams.set(k, cf[k]); });
     return u.toString();
   }
   window.vhcDecorate = decorate;
