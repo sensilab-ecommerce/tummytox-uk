@@ -217,6 +217,14 @@
        block's own bottom padding without touching CTA-less blocks) */
     .softcta{margin-top:18px;margin-bottom:-10px}
     .darkband .softcta{margin-bottom:0}
+    /* reasons: number disc centred above the heading */
+    .badge{margin-left:auto;margin-right:auto}
+    /* progress cards: disc moves beside the heading instead of above it,
+       vertically centred in a left column spanning the full card height */
+    .tcard{display:grid;grid-template-columns:30px minmax(0,1fr);column-gap:13px;row-gap:6px;align-items:start}
+    .tcard .tnum{grid-area:1/1/3/2;align-self:center;margin:0}
+    .tcard h3{grid-area:1/2/2/3;margin:0}
+    .tcard p{grid-area:2/2/3/3}
   }
   @media (max-width:560px){
     .wrap,.narrow{padding:0 16px}
