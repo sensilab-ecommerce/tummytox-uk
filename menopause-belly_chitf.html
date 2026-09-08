@@ -4,8 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Migliaia di donne pensano che avere la “pancetta” sia normale in menopausa. Ma si SBAGLIANO.</title>
-<!-- Consent — CookieScript (TummyTox UK). Loads first so it can gate the tags below. -->
-<script type="text/javascript" charset="UTF-8" src="//cdn.cookie-script.com/s/b8f094b36eb352ec77e06897fa9f02aa.js"></script>
+<!-- Consent — no CMP tag on this page. The CookieScript loader was removed on purpose:
+     this advertorial sets no cookie-gated tags of its own, so it carries a plain
+     notification-only cookie notice (see #vhc-cookie-notice before </body>) and
+     forwards csa=1&csm=1 to the shop on every outbound CTA. -->
 <link rel="icon" href="https://www.sensi2live.com/media/favicon/stores/81/favicon_1.png">
 <style>
   :root{
@@ -234,6 +236,31 @@
     .offer{padding:26px 20px 24px}
     .offer h2{font-size:22px}
     .btn .bmain{font-size:17px}
+  }
+  /* ===== COOKIE NOTICE (notification only — gates nothing) ===== */
+  #vhc-cookie-notice{position:fixed;left:0;right:0;bottom:0;z-index:9999;
+      background:linear-gradient(115deg,#fdfbfa 0%,#fdf2ec 52%,#f9d9cd 100%);
+      border-top:1px solid var(--line);box-shadow:0 -6px 26px rgba(26,26,26,.12);
+      font-family:var(--sans);color:var(--ink);padding:20px 0}
+  #vhc-cookie-notice[hidden]{display:none}
+  #vhc-cookie-notice .ckwrap{max-width:1120px;margin:0 auto;padding:0 20px}
+  #vhc-cookie-notice .cktitle{margin:0 0 10px;font-size:23px;line-height:1.15;font-weight:800;
+      letter-spacing:-.015em;color:var(--ink)}
+  #vhc-cookie-notice .cktext{margin:0 0 10px;font-size:14px;line-height:1.5;color:var(--body)}
+  #vhc-cookie-notice .cklink{display:inline-block;margin:0 0 16px;font-size:14px;font-weight:700;
+      color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+  #vhc-cookie-notice .cklink:hover{color:var(--cta-d)}
+  #vhc-cookie-notice .ckbtn{-webkit-appearance:none;appearance:none;border:0;cursor:pointer;
+      display:inline-block;background:var(--cta);color:#fff;font-family:var(--sans);font-weight:800;
+      font-size:14px;letter-spacing:.02em;text-transform:uppercase;padding:15px 32px;
+      border-radius:999px;box-shadow:0 3px 12px rgba(231,77,124,.28);transition:background .15s ease}
+  #vhc-cookie-notice .ckbtn:hover{background:var(--cta-d)}
+  @media(max-width:640px){
+    #vhc-cookie-notice{padding:14px 0;max-height:62vh;overflow-y:auto}
+    #vhc-cookie-notice .cktitle{font-size:18px;margin-bottom:8px}
+    #vhc-cookie-notice .cktext{font-size:13px}
+    #vhc-cookie-notice .cklink{margin-bottom:12px;font-size:13px}
+    #vhc-cookie-notice .ckbtn{display:block;width:100%;text-align:center;padding:14px 18px}
   }
 </style>
 </head>
@@ -483,6 +510,34 @@
   <p class="disc">Integratore alimentare. Gli integratori non vanno intesi come sostituti di una dieta varia ed equilibrata e di uno stile di vita sano. La dose giornaliera raccomandata non dev’essere superata. Tenere lontano dalla portata dei bambini. Il prodotto non è consigliato alle donne in gravidanza o in allattamento, né ai minori di 18 anni. I nostri prodotti non sono pensati per prevenire, trattare o curare malattie.</p>
 </div></footer>
 
+<!-- ===== COOKIE NOTICE (notification only — does not gate any script) =====
+     Static markup, no third-party CMP. Hidden by default so returning visitors
+     never see a flash; the script reveals it only when unacknowledged. Clicking
+     the button hides it and remembers the choice in localStorage.
+     Outbound shop links always carry csa=1&csm=1 (see forwarding block below),
+     so the shop's Cookie Restriction Mode is pre-accepted either way. -->
+<div id="vhc-cookie-notice" role="region" aria-label="Cookies" data-clarity-mask="true" hidden>
+  <div class="ckwrap">
+    <p class="cktitle">TummyTox Online Cookies</p>
+    <p class="cktext">Sensilab utilizza i cookies su tutti i suoi siti web, i quali non salvano i tuoi dati personali. Alcuni cookies potrebbero essere già attivi. Procedendo con la navigazione sul sito acconsenti automaticamente al loro utilizzo.</p>
+    <a class="cklink" href="https://www.tummytox.org/it/privacy-policy-cookie-restriction-mode" target="_blank" rel="noopener">Questo sito usa i cookie</a>
+    <div><button type="button" class="ckbtn" id="vhc-cookie-accept">ACCETTA TUTTI I COOKIES</button></div>
+  </div>
+</div>
+<script>
+(function () {
+  var KEY = 'vhc_cookie_notice_ack';
+  var el  = document.getElementById('vhc-cookie-notice');
+  if (!el) return;
+  function seen() { try { return localStorage.getItem(KEY) === '1'; } catch (e) { return false; } }
+  function remember() { try { localStorage.setItem(KEY, '1'); } catch (e) {} }
+  if (seen()) return;                 // already acknowledged — stays hidden
+  el.hidden = false;
+  var btn = document.getElementById('vhc-cookie-accept');
+  if (btn) btn.addEventListener('click', function () { el.hidden = true; remember(); });
+})();
+</script>
+
 <script>
   /* Suppress context menu, drag and long-press on media wrappers. */
   ['contextmenu','dragstart'].forEach(function(ev){
@@ -509,31 +564,8 @@
   window.cvg||(cvg=function(){cvg.process?cvg.process.apply(cvg,arguments):cvg.queue.push(arguments)},cvg.queue=[]);
   cvg({method:"track",eventName:"$page_load"});
 </script>
-<!-- Mask the consent banner so it doesn't dominate Clarity heatmaps/recordings.
-     The banner is injected at runtime, so we tag its containers with data-clarity-mask as they appear. -->
-<script>
-  (function () {
-    var SELECTORS = [
-      '#cookiescript_injected',
-      '#cookiescript_injected_wrapper',
-      '#cookiescript_badge',
-      '#cookiescript_categories'
-    ];
-    function mask() {
-      SELECTORS.forEach(function (sel) {
-        var el = document.querySelector(sel);
-        if (el && !el.hasAttribute('data-clarity-mask')) {
-          el.setAttribute('data-clarity-mask', 'true');
-        }
-      });
-    }
-    mask();
-    var obs = new MutationObserver(mask);
-    obs.observe(document.documentElement, { childList: true, subtree: true });
-    // Banner is injected within a few seconds; stop watching afterwards.
-    setTimeout(function () { obs.disconnect(); }, 15000);
-  })();
-</script>
+<!-- The old CookieScript Clarity-masking script is gone with the CMP. The in-page
+     notice carries data-clarity-mask="true" directly on its container instead. -->
 <!-- Converge: "Added to Cart (plp)" on the main offer-card CTA only.
      The inline .softcta links are intentionally not tracked here. -->
 <script>
@@ -557,9 +589,10 @@
      At click time, decorates every outbound shop link with:
        1. every query param the visitor landed with (utm_*, gclid, fbclid, …)
        2. Converge's __cvg_uid / __cvg_sid, fresh from the cookies the pixel sets
-       3. the visitor's CookieScript consent state — csa (analytics) / csm (marketing).
-          TummyTox is Magento, so the shop runs its own CookieScript tag and would
-          otherwise ask the same question twice in one funnel.
+       3. a constant allow-all consent state — csa=1&csm=1. This page carries a
+          notification-only cookie notice rather than a CMP, so there is no per-visitor
+          state to read: the shop's Cookie Restriction Mode is always pre-accepted and
+          TummyTox's Magento never asks the same question twice in one funnel.
      REPLACES the older standalone cvgDecorate block — never run both, or the
      Converge params double-append.
      Exposes window.vhcDecorate(url) for JS-built redirects (minicart checkout). -->
@@ -568,15 +601,15 @@
   var KEY = 'vhc_landing_params';              // sessionStorage, per tab, first touch wins
   var MAX_PARAMS = 30, MAX_LEN = 512;          // abuse guard
 
-  // Consent-state params -> CookieScript CATEGORY KEYS (the key, not the banner's
-  // display label — a banner can show "Marketing" while the key stays `targeting`).
-  // Verify against CookieScript.instance.categories() on the live project.
-  // Set to {} on Shopify builds: Shopify checkout runs its own consent layer.
-  var CONSENT_MAP = { csa: 'performance', csm: 'targeting' };
+  // Consent-state params for the Magento destination. There is no CMP on this page,
+  // so these are CONSTANT rather than read per visitor: every outbound shop link
+  // gets csa=1 (analytics) & csm=1 (marketing) — allow all. The in-page notice is
+  // informational only and does not change these values.
+  var CONSENT_PARAMS = { csa: '1', csm: '1' };
 
-  // Never carried over from the inbound URL — always recomputed locally, so a
-  // crafted or stale inbound link can't spoof consent or session identity.
-  var RESERVED = ['__cvg_uid', '__cvg_sid'].concat(Object.keys(CONSENT_MAP));
+  // Never carried over from the inbound URL — always set locally, so a crafted or
+  // stale inbound link can't spoof consent or session identity.
+  var RESERVED = ['__cvg_uid', '__cvg_sid'].concat(Object.keys(CONSENT_PARAMS));
 
   function landingParams() {
     var out = {}, n = 0;
@@ -600,38 +633,6 @@
     return m ? decodeURIComponent(m[1]) : '';
   }
 
-  // --- CookieScript consent state -----------------------------------------
-  // Prefer the JS API; fall back to parsing the CookieScriptConsent cookie if the
-  // banner script hasn't initialised yet. Read at CLICK time, never cached — the
-  // visitor can change their choice after the page renders.
-  function consentFromCookie() {
-    var raw = cookie('CookieScriptConsent');
-    if (!raw) return null;
-    var d; try { d = JSON.parse(raw); } catch (e) { return null; }
-    var c = d.categories;
-    if (typeof c === 'string') { try { c = JSON.parse(c); } catch (e) { c = []; } }
-    return { action: d.action, categories: Array.isArray(c) ? c : [] };
-  }
-  function consentFlags() {
-    if (!Object.keys(CONSENT_MAP).length) return null;
-    var st = null;
-    try {
-      if (window.CookieScript && window.CookieScript.instance &&
-          typeof window.CookieScript.instance.currentState === 'function') {
-        st = window.CookieScript.instance.currentState();
-      }
-    } catch (e) {}
-    if (!st) st = consentFromCookie();
-    // Banner unanswered -> send nothing. An unanswered banner is NOT a refusal;
-    // csa=0 would tell the shop the visitor declined when they were never asked.
-    if (!st || !st.action) return null;
-    var cats = st.categories || [], out = {};
-    Object.keys(CONSENT_MAP).forEach(function (param) {
-      out[param] = (st.action !== 'reject' && cats.indexOf(CONSENT_MAP[param]) > -1) ? '1' : '0';
-    });
-    return out;
-  }
-
   function decorate(url) {
     if (!url) return url;
     var u;
@@ -643,8 +644,9 @@
     var uid = cookie('__cvg_uid'), sid = cookie('__cvg_sid');
     if (uid) u.searchParams.set('__cvg_uid', uid);      // always fresh
     if (sid) u.searchParams.set('__cvg_sid', sid);
-    var cf = consentFlags();                            // always fresh
-    if (cf) Object.keys(cf).forEach(function (k) { u.searchParams.set(k, cf[k]); });
+    Object.keys(CONSENT_PARAMS).forEach(function (k) {  // constant allow-all
+      u.searchParams.set(k, CONSENT_PARAMS[k]);
+    });
     return u.toString();
   }
   window.vhcDecorate = decorate;
